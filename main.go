@@ -36,6 +36,7 @@ func main() {
 		}
 	}()
 
+	//for greacefull shutdown
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan, os.Interrupt)
 	signal.Notify(sigChan, os.Kill)
