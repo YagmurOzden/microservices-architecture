@@ -1,16 +1,18 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/yagmurozden/microservices/handlers"
 )
 
 func main() {
-	l := log.New(os.Stdout, "test API - ", log.LstdFlags)
+	l := log.New(os.Stdout, " - test API - ", log.LstdFlags)
 
 	hh := handlers.NewHello(l)
 	gh := handlers.NewGoodbye(l)
@@ -26,17 +28,25 @@ func main() {
 		ReadTimeout:  1 * time.Second,
 		WriteTimeout: 1 * time.Second,
 	}
-	s.ListenAndServe()
-	// go func() {
-	// 	err := s.ListenAndServe()
-	// 	if err != nil {
-	// 		l.Fatal(err)
-	// 	}
-	// }()
+
+	go func() {
+		err := s.ListenAndServe()
+		if err != nil {
+			l.Fatal(err)
+		}
+	}()
+
+	sigChan := make(chan os.Signal)
+	signal.Notify(sigChan, os.Interrupt)
+	signal.Notify(sigChan, os.Kill)
+
+	sig := <-sigChan
+	l.Println("Recieved terminate, graceful shutdown", sig)
+
 	//it will wait the process and it will shot down the service, if we want to upgrade or something we may use it.
 	//if the handkers still working of this time it will force shotdown
 
-	// tc, cancel := context.WithTimeout(context.Background(), 300*time.Second)
-	// fmt.Println("cancel: ", cancel)
-	// s.Shutdown(tc)
+	tc, _ := context.WithTimeout(context.Background(), 300*time.Second)
+
+	s.Shutdown(tc)
 }
