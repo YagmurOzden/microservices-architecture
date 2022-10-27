@@ -7,6 +7,6 @@ run:$ go run main go
 
 and from another terminal 
 
-run:$ curl localhost:9090/products
+run:$ curl localhost:9090/
 
 it will give you the products you added.
